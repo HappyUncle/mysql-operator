@@ -242,17 +242,11 @@ func (r *ReconcileMysqlNode) Reconcile(ctx context.Context, request reconcile.Re
 		// initialization failed, mark node as not yet initialized (by updating pod init condition)
 		updatePodStatusCondition(pod, mysqlcluster.NodeInitializedConditionType,
 			corev1.ConditionFalse, "mysqlInitializationFailed", err.Error())
-
-		if uErr := r.updatePod(ctx, pod); uErr != nil {
-			return reconcile.Result{}, uErr
-		}
-
-		return reconcile.Result{}, err
+	} else {
+		// initialization complete
+		updatePodStatusCondition(pod, mysqlcluster.NodeInitializedConditionType,
+			corev1.ConditionTrue, "mysqlInitializationSucceeded", "success")
 	}
-
-	// initialization complete
-	updatePodStatusCondition(pod, mysqlcluster.NodeInitializedConditionType,
-		corev1.ConditionTrue, "mysqlInitializationSucceeded", "success")
 
 	return reconcile.Result{}, r.updatePod(ctx, pod)
 }
